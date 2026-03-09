@@ -159,6 +159,19 @@ export class DatabaseService {
         }
     }
 
+    public async dropAllTables(): Promise<void> {
+        try {
+            await this.db.execAsync(`
+            DROP TABLE IF EXISTS products;
+            DROP TABLE IF EXISTS dishes;
+            DROP TABLE IF EXISTS drinks;
+        `);
+            console.log('All tables dropped successfully');
+        } catch (err) {
+            console.error(`DatabaseService:dropAllTables() failed, ${err}`);
+        }
+    }
+
     public async closeDatabase(): Promise<void> {
         try {
             await this.db.closeAsync()
