@@ -7,7 +7,7 @@ import {StatusBar, View, Text} from "react-native";
 import * as SplashScreen from 'expo-splash-screen'
 import {useEffect, useState} from "react";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {CustomSplashScreen} from "@/app/components/splash/CustomSplashScreen";
+import {CustomSplashScreen} from "@/app/widgets/SplashScreen/CustomSplashScreen";
 
 SplashScreen.preventAutoHideAsync();
 
