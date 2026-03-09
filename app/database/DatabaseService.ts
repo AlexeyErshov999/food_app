@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite'
-import {testProducts} from "@/app/database/testProducts";
-import {Product} from "@/app/database/types";
+import {testDishes, testData, testDrinks} from "@/app/database/testData";
+import {Dish, Drink, Product, TableType} from "@/app/database/types";
 
 export class DatabaseService {
     private static instance: DatabaseService;
@@ -17,19 +17,59 @@ export class DatabaseService {
         return DatabaseService.instance;
     }
 
+    // TODO: name - возможно зарезервированное слово
     public async initDatabase(): Promise<void> {
-        try {
+        const createProductsTable = async (): Promise<void> => {
             await this.db.execAsync(`
                 CREATE TABLE IF NOT EXISTS products
                 (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER PRIMARY KEY,
                     name TEXT,
+                    weight INTEGER,
                     proteins REAL,
                     carbohydrates REAL,
                     fats REAL,
                     calories REAL
                 );
             `);
+        }
+
+        // TODO: name - возможно зарезервированное слово
+        const createDishesTable = async (): Promise<void> => {
+            await this.db.execAsync(`
+                CREATE TABLE IF NOT EXISTS dishes
+                (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT,
+                    weight INTEGER,
+                    proteins REAL,
+                    carbohydrates REAL,
+                    fats REAL,
+                    calories REAL
+                );
+            `);
+        }
+
+        // TODO: name - возможно зарезервированное слово
+        const createDrinksTable = async (): Promise<void> => {
+            await this.db.execAsync(`
+                CREATE TABLE IF NOT EXISTS drinks
+                (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT,
+                    weight INTEGER,
+                    proteins REAL,
+                    carbohydrates REAL,
+                    fats REAL,
+                    calories REAL
+                );
+            `);
+        }
+
+        try {
+            await createProductsTable();
+            await createDishesTable();
+            await createDrinksTable();
         } catch (err) {
             console.error(`DatabaseService:initDatabase() failed, ${err}`);
         }
@@ -37,16 +77,38 @@ export class DatabaseService {
 
     public async fillDatabaseByTestData(): Promise<void> {
         try {
-            const result = await this.getAllProducts();
+            const products = await this.getAllProducts();
+            const dishes = await this.getAllDishes();
+            const drinks = await this.getAllDrinks();
 
-            if (result.length === 0) {
-                for (const product of testProducts) {
+            if (products.length === 0) {
+                for (const product of testData) {
                     await this.db.runAsync(
-                        'INSERT INTO products (name, proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?);',
+                        'INSERT INTO products (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
                         product
                     );
                 }
                 console.log(`DatabaseService:fillDatabaseByTestData() products filled`);
+            }
+
+            if (dishes.length === 0) {
+                for (const dish of testDishes) {
+                    await this.db.runAsync(
+                        'INSERT INTO dishes (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
+                        dish
+                    );
+                }
+                console.log(`DatabaseService:fillDatabaseByTestData() dishes filled`);
+            }
+
+            if (drinks.length === 0) {
+                for (const drink of testDrinks) {
+                    await this.db.runAsync(
+                        'INSERT INTO drinks (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
+                        drink
+                    );
+                }
+                console.log(`DatabaseService:fillDatabaseByTestData() drinks filled`);
             }
 
         } catch (err) {
@@ -61,6 +123,39 @@ export class DatabaseService {
         } catch (err) {
             console.error(`DatabaseService:getAllProducts() failed, ${err}`);
             return [];
+        }
+    }
+
+    public async getAllDishes(): Promise<Dish[]> {
+        try {
+            const dishes = await this.db.getAllAsync('SELECT * FROM dishes ORDER BY name;');
+            return Array.isArray(dishes) ? Array.from(dishes as Dish[]) : [];
+        } catch (err) {
+            console.error(`DatabaseService:getAllDishes() failed, ${err}`);
+            return [];
+        }
+    }
+
+    public async getAllDrinks(): Promise<Drink[]> {
+        try {
+            const drinks = await this.db.getAllAsync('SELECT * FROM drinks ORDER BY name;');
+            return Array.isArray(drinks) ? Array.from(drinks as Drink[]) : [];
+        } catch (err) {
+            console.error(`DatabaseService:getAllDrinks() failed, ${err}`);
+            return [];
+        }
+    }
+
+    public async addFoodToTable(table: TableType, food: Omit<Product, 'id'> | Omit<Dish, 'id'> | Omit<Drink, 'id'>): Promise<void> {
+        try {
+            const {name, weight, proteins, carbohydrates, fats, calories} = food;
+
+            await this.db.runAsync(
+                `INSERT INTO ${table} (name, weight, proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);`,
+                [name, weight, proteins, carbohydrates, fats, calories]
+            );
+        } catch (err) {
+            console.error(`DatabaseService:addFoodToTable() failed, ${err}`);
         }
     }
 
