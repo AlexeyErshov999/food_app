@@ -5,7 +5,7 @@ import {Animated, View} from "react-native";
 import {Dish, Drink} from "@/app/database/types";
 import ScrollView = Animated.ScrollView;
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
-import { Link } from 'expo-router';
+import {Link, RelativePathString} from 'expo-router';
 
 interface Product {
     id: number;
@@ -84,17 +84,18 @@ export default function HomeScreen() {
                     backgroundColor: "#f5f5f5",
                     position: "relative",
                 }}>
-                <Text style={{ fontSize: 24, marginBottom: 20, padding: 16 }}>
+                <Text style={{fontSize: 24, marginBottom: 20, padding: 16}}>
                     Products list
                 </Text>
                 <ScrollView>
-                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
+                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
                         PRODUCTS
                     </Text>
 
                     {products.length > 0 ? (
                         products.map((product: Product) => (
-                            <Text
+                            <Link
+                                href={`/(screens)/products/${product.id}` as RelativePathString}
                                 key={product.id}
                                 style={{
                                     padding: 8,
@@ -102,23 +103,25 @@ export default function HomeScreen() {
                                     borderBottomWidth: 1,
                                     borderBottomColor: "#ddd",
                                 }}>
-                                {product.name} - {product.calories} kcal
-                            </Text>
+                                <Text>
+                                    {product.name} - {product.calories} kcal
+                                </Text>
+                            </Link>
                         ))
                     ) : (
-                        <Text style={{ textAlign: "center", marginTop: 20 }}>
+                        <Text style={{textAlign: "center", marginTop: 20}}>
                             No products found.
                         </Text>
                     )}
 
-                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
+                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
                         DISHES
                     </Text>
 
                     {dishes.length > 0 ? (
                         dishes.map((dish: Dish) => (
                             <Link
-                                href={`/(screens)/products/${dish.id}`}
+                                href={`/(screens)/products/${dish.id}` as RelativePathString}
                                 key={dish.id}
                                 style={{
                                     padding: 8,
@@ -132,18 +135,19 @@ export default function HomeScreen() {
                             </Link>
                         ))
                     ) : (
-                        <Text style={{ textAlign: "center", marginTop: 20 }}>
+                        <Text style={{textAlign: "center", marginTop: 20}}>
                             No dishes found.
                         </Text>
                     )}
 
-                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
+                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
                         DRINKS
                     </Text>
 
                     {drinks.length > 0 ? (
                         drinks.map((drink: Drink) => (
-                            <Text
+                            <Link
+                                href={`/(screens)/products/${drink.id}` as RelativePathString}
                                 key={drink.id}
                                 style={{
                                     padding: 8,
@@ -151,11 +155,13 @@ export default function HomeScreen() {
                                     borderBottomWidth: 1,
                                     borderBottomColor: "#ddd",
                                 }}>
-                                {drink.name} - {drink.calories} kcal
-                            </Text>
+                                <Text>
+                                    {drink.name} - {drink.calories} kcal
+                                </Text>
+                            </Link>
                         ))
                     ) : (
-                        <Text style={{ textAlign: "center", marginTop: 20 }}>
+                        <Text style={{textAlign: "center", marginTop: 20}}>
                             No drinks found.
                         </Text>
                     )}
