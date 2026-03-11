@@ -4,10 +4,10 @@ import {Dish, Drink, Product, TableType} from "@/app/database/types";
 
 export class DatabaseService {
     private static instance: DatabaseService;
-    private db: SQLite.SQLiteDatabase
+    private db: SQLite.SQLiteDatabase;
 
     private constructor() {
-        this.db = SQLite.openDatabaseSync('food_app.db')
+        this.db = SQLite.openDatabaseSync("food_app.db");
     }
 
     public static getInstance(): DatabaseService {
@@ -32,7 +32,7 @@ export class DatabaseService {
                     calories REAL
                 );
             `);
-        }
+        };
 
         // TODO: name - возможно зарезервированное слово
         const createDishesTable = async (): Promise<void> => {
@@ -48,7 +48,7 @@ export class DatabaseService {
                     calories REAL
                 );
             `);
-        }
+        };
 
         // TODO: name - возможно зарезервированное слово
         const createDrinksTable = async (): Promise<void> => {
@@ -64,7 +64,7 @@ export class DatabaseService {
                     calories REAL
                 );
             `);
-        }
+        };
 
         try {
             await createProductsTable();
@@ -84,51 +84,80 @@ export class DatabaseService {
             if (products.length === 0) {
                 for (const product of testData) {
                     await this.db.runAsync(
-                        'INSERT INTO products (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
-                        product
+                        "INSERT INTO products (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);",
+                        product,
                     );
                 }
-                console.log(`DatabaseService:fillDatabaseByTestData() products filled`);
+                console.log(
+                    `DatabaseService:fillDatabaseByTestData() products filled`,
+                );
             }
 
             if (dishes.length === 0) {
                 for (const dish of testDishes) {
                     await this.db.runAsync(
-                        'INSERT INTO dishes (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
-                        dish
+                        "INSERT INTO dishes (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);",
+                        dish,
                     );
                 }
-                console.log(`DatabaseService:fillDatabaseByTestData() dishes filled`);
+                console.log(
+                    `DatabaseService:fillDatabaseByTestData() dishes filled`,
+                );
             }
 
             if (drinks.length === 0) {
                 for (const drink of testDrinks) {
                     await this.db.runAsync(
-                        'INSERT INTO drinks (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);',
-                        drink
+                        "INSERT INTO drinks (name, weight,  proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);",
+                        drink,
                     );
                 }
-                console.log(`DatabaseService:fillDatabaseByTestData() drinks filled`);
+                console.log(
+                    `DatabaseService:fillDatabaseByTestData() drinks filled`,
+                );
             }
-
         } catch (err) {
-            console.error(`DatabaseService:fillDatabaseByTestData() failed:`, err);
+            console.error(
+                `DatabaseService:fillDatabaseByTestData() failed:`,
+                err,
+            );
         }
     }
 
     public async getAllProducts(): Promise<Product[]> {
         try {
-            const products = await this.db.getAllAsync('SELECT * FROM products ORDER BY name;');
-            return Array.isArray(products) ? Array.from(products as Product[]) : [];
+            const products = await this.db.getAllAsync(
+                "SELECT * FROM products ORDER BY name;",
+            );
+            return Array.isArray(products)
+                ? Array.from(products as Product[])
+                : [];
         } catch (err) {
             console.error(`DatabaseService:getAllProducts() failed, ${err}`);
             return [];
         }
     }
 
+    public async getProductById(id: number): Promise<Product | []> {
+        try {
+            const products = await this.db.getAllAsync(
+                "SELECT * FROM products WHERE id = ?;",
+                [id],
+            );
+            return Array.isArray(products)
+                ? (Array.from(products)[0] as Product)
+                : [];
+        } catch (err) {
+            console.error(`DatabaseService:getProductById() failed, ${err}`);
+            return [];
+        }
+    }
+
     public async getAllDishes(): Promise<Dish[]> {
         try {
-            const dishes = await this.db.getAllAsync('SELECT * FROM dishes ORDER BY name;');
+            const dishes = await this.db.getAllAsync(
+                "SELECT * FROM dishes ORDER BY name;",
+            );
             return Array.isArray(dishes) ? Array.from(dishes as Dish[]) : [];
         } catch (err) {
             console.error(`DatabaseService:getAllDishes() failed, ${err}`);
@@ -136,9 +165,24 @@ export class DatabaseService {
         }
     }
 
+    public async getDishById(id: number): Promise<Dish | []> {
+        try {
+            const dishes = await this.db.getAllAsync(
+                "SELECT * FROM dishes WHERE id = ?;",
+                [id],
+            );
+            return Array.isArray(dishes) ? (Array.from(dishes)[0] as Dish) : [];
+        } catch (err) {
+            console.error(`DatabaseService:getDishById() failed, ${err}`);
+            return [];
+        }
+    }
+
     public async getAllDrinks(): Promise<Drink[]> {
         try {
-            const drinks = await this.db.getAllAsync('SELECT * FROM drinks ORDER BY name;');
+            const drinks = await this.db.getAllAsync(
+                "SELECT * FROM drinks ORDER BY name;",
+            );
             return Array.isArray(drinks) ? Array.from(drinks as Drink[]) : [];
         } catch (err) {
             console.error(`DatabaseService:getAllDrinks() failed, ${err}`);
@@ -146,13 +190,30 @@ export class DatabaseService {
         }
     }
 
-    public async addFoodToTable(table: TableType, food: Omit<Product, 'id'> | Omit<Dish, 'id'> | Omit<Drink, 'id'>): Promise<void> {
+    public async getDrinkById(id: number): Promise<Drink | []> {
         try {
-            const {name, weight, proteins, carbohydrates, fats, calories} = food;
+            const drinks = await this.db.getAllAsync(
+                "SELECT * FROM drinks WHERE id = ?;",
+                [id],
+            );
+            return Array.isArray(drinks) ? (Array.from(drinks)[0] as Drink) : [];
+        } catch (err) {
+            console.error(`DatabaseService:getDrinkById() failed, ${err}`);
+            return [];
+        }
+    }
+
+    public async addFoodToTable(
+        table: TableType,
+        food: Omit<Product, "id"> | Omit<Dish, "id"> | Omit<Drink, "id">,
+    ): Promise<void> {
+        try {
+            const { name, weight, proteins, carbohydrates, fats, calories } =
+                food;
 
             await this.db.runAsync(
                 `INSERT INTO ${table} (name, weight, proteins, carbohydrates, fats, calories) VALUES (?, ?, ?, ?, ?, ?);`,
-                [name, weight, proteins, carbohydrates, fats, calories]
+                [name, weight, proteins, carbohydrates, fats, calories],
             );
         } catch (err) {
             console.error(`DatabaseService:addFoodToTable() failed, ${err}`);
@@ -166,7 +227,7 @@ export class DatabaseService {
             DROP TABLE IF EXISTS dishes;
             DROP TABLE IF EXISTS drinks;
         `);
-            console.log('All tables dropped successfully');
+            console.log("All tables dropped successfully");
         } catch (err) {
             console.error(`DatabaseService:dropAllTables() failed, ${err}`);
         }
@@ -174,7 +235,7 @@ export class DatabaseService {
 
     public async closeDatabase(): Promise<void> {
         try {
-            await this.db.closeAsync()
+            await this.db.closeAsync();
         } catch (err) {
             console.error(`DatabaseService:closeDatabase() failed, ${err}`);
         }

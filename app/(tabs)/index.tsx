@@ -5,6 +5,7 @@ import {Animated, View} from "react-native";
 import {Dish, Drink} from "@/app/database/types";
 import ScrollView = Animated.ScrollView;
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
+import { Link } from 'expo-router';
 
 interface Product {
     id: number;
@@ -77,12 +78,17 @@ export default function HomeScreen() {
 
     return (
         <>
-            <Layout style={{flex: 1, backgroundColor: '#f5f5f5', position: 'relative'}}>
-                <Text style={{fontSize: 24, marginBottom: 20, padding: 16}}>
+            <Layout
+                style={{
+                    flex: 1,
+                    backgroundColor: "#f5f5f5",
+                    position: "relative",
+                }}>
+                <Text style={{ fontSize: 24, marginBottom: 20, padding: 16 }}>
                     Products list
                 </Text>
                 <ScrollView>
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
+                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
                         PRODUCTS
                     </Text>
 
@@ -90,37 +96,48 @@ export default function HomeScreen() {
                         products.map((product: Product) => (
                             <Text
                                 key={product.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
+                                style={{
+                                    padding: 8,
+                                    fontSize: 16,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "#ddd",
+                                }}>
                                 {product.name} - {product.calories} kcal
                             </Text>
                         ))
                     ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
+                        <Text style={{ textAlign: "center", marginTop: 20 }}>
                             No products found.
                         </Text>
                     )}
 
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
+                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
                         DISHES
                     </Text>
 
                     {dishes.length > 0 ? (
                         dishes.map((dish: Dish) => (
-                            <Text
+                            <Link
+                                href={`/(screens)/products/${dish.id}`}
                                 key={dish.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
-                                {dish.name} - {dish.calories} kcal
-                            </Text>
+                                style={{
+                                    padding: 8,
+                                    fontSize: 16,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "#ddd",
+                                }}>
+                                <Text>
+                                    {dish.name} - {dish.calories} kcal
+                                </Text>
+                            </Link>
                         ))
                     ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
+                        <Text style={{ textAlign: "center", marginTop: 20 }}>
                             No dishes found.
                         </Text>
                     )}
 
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
+                    <Text style={{ fontSize: 20, marginBottom: 5, padding: 5 }}>
                         DRINKS
                     </Text>
 
@@ -128,13 +145,17 @@ export default function HomeScreen() {
                         drinks.map((drink: Drink) => (
                             <Text
                                 key={drink.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
+                                style={{
+                                    padding: 8,
+                                    fontSize: 16,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "#ddd",
+                                }}>
                                 {drink.name} - {drink.calories} kcal
                             </Text>
                         ))
                     ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
+                        <Text style={{ textAlign: "center", marginTop: 20 }}>
                             No drinks found.
                         </Text>
                     )}
@@ -142,31 +163,40 @@ export default function HomeScreen() {
 
                 <Button
                     style={{
-                        borderRadius: '50%',
-                        position: 'absolute',
+                        borderRadius: "50%",
+                        position: "absolute",
                         bottom: 50,
                         right: 20,
                         width: 60,
-                        height: 60
+                        height: 60,
                     }}
-                    status='primary'
-                    size='large'
-                    accessoryRight={(props) => (
-                        <Text {...props} style={{fontSize: 30, color: 'white', lineHeight: 30}}>
+                    status="primary"
+                    size="large"
+                    accessoryRight={props => (
+                        <Text
+                            {...props}
+                            style={{
+                                fontSize: 30,
+                                color: "white",
+                                lineHeight: 30,
+                            }}>
                             +
                         </Text>
                     )}
                     onPress={() => {
-                        setIsCreateModalOpen(true)
+                        setIsCreateModalOpen(true);
                     }}
                 />
             </Layout>
 
             {/*// Modals*/}
-            <CreateProductModal visible={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}
-                                onSaveProduct={async () => {
-                                    await handleProductSave(true)
-                                }}/>
+            <CreateProductModal
+                visible={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSaveProduct={async () => {
+                    await handleProductSave(true);
+                }}
+            />
         </>
     );
 }
