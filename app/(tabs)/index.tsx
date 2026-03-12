@@ -1,9 +1,9 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Button, Layout, Text} from "@ui-kitten/components";
 import {DatabaseService} from "@/app/database/DatabaseService";
 import {View, ScrollView} from "react-native";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
-import {Link, RelativePathString} from 'expo-router';
+import {Link, RelativePathString, useFocusEffect} from 'expo-router';
 
 interface Product {
     id: number;
@@ -43,6 +43,12 @@ export default function HomeScreen() {
     useEffect(() => {
         loadData();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     // Закрытие модального окна с обновлением
     const handleProductSave = async (shouldRefresh?: boolean) => {
@@ -94,7 +100,7 @@ export default function HomeScreen() {
                                     borderBottomColor: "#ddd",
                                 }}>
                                 <Text>
-                                    {product.prod_name} - {product.category}
+                                    {product.prod_name}
                                 </Text>
                             </Link>
                         ))

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {
     ScrollView,
     View,
@@ -11,7 +11,7 @@ import {
     Tab, Spinner,
 } from "@ui-kitten/components";
 import {Stack, useLocalSearchParams, router} from "expo-router";
-import {Dish, Drink, Product} from "@/app/database/types";
+import {Product} from "@/app/database/types";
 import {DatabaseService} from "@/app/database/DatabaseService";
 import {styles} from "@/app/(screens)/products/(details)/styles";
 import {ProductDescription} from "@/app/components/ProductDescription/ProductDescription";
@@ -23,16 +23,16 @@ const ProductDetailsScreen = () => {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const [product, setProduct] = React.useState<Product | Dish | Drink | null>(
+    const [product, setProduct] = React.useState<Product | null>(
         null,
     );
 
+    let db = DatabaseService.getInstance();
     const {id} = useLocalSearchParams();
 
-    const loadProductById = async (id: number): Promise<void> => {
+    const loadProductById = useCallback(async (id: number): Promise<void> => {
         try {
             setLoading(true);
-            const db = DatabaseService.getInstance();
             const productDetails = await db.getProductById(id);
             setProduct(productDetails as Product);
 
@@ -46,7 +46,7 @@ const ProductDetailsScreen = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [db]);
 
     const navigateBack = () => {
         router.back();
@@ -54,7 +54,7 @@ const ProductDetailsScreen = () => {
 
     useEffect(() => {
         loadProductById(parseInt(id as string));
-    }, [id]);
+    }, [id, loadProductById]);
 
     if (loading) {
         return (
@@ -87,15 +87,28 @@ const ProductDetailsScreen = () => {
                     style={{flex: 1}}
                     contentContainerStyle={{flexGrow: 1}}
                 >
-                    <Button
-                        appearance={'ghost'}
-                        size={'large'}
-                        onPress={() => navigateBack()}
-                        style={{alignSelf: 'flex-start'}}
-                    >
-                        <Ionicons name="arrow-back"/>
-                        Back
-                    </Button>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Button
+                            appearance={'ghost'}
+                            size={'large'}
+                            onPress={() => navigateBack()}
+                        >
+                            <Ionicons name="arrow-back"/>
+                            Назад
+                        </Button>
+                        <Button
+                            appearance={'ghost'}
+                            status={'danger'}
+                            size={'large'}
+                            onPress={async () => {
+                                await db.deleteProductById(parseInt(id as string));
+                                navigateBack();
+                            }}
+                        >
+                            <Ionicons name="basket"/>
+                            Удалить
+                        </Button>
+                    </View>
                     <Layout style={styles.imageContainer}>
                         <Layout style={styles.imagePlaceholder}>
                             <Text category="h6" appearance="hint">
@@ -106,7 +119,7 @@ const ProductDetailsScreen = () => {
 
                     <Layout style={styles.infoContainer}>
                         <Text category="h5" style={styles.title}>
-                            {product?.name}
+                            {product?.prod_name}
                         </Text>
                     </Layout>
 
@@ -118,6 +131,7 @@ const ProductDetailsScreen = () => {
                         style={styles.tabView}>
                         <Tab title="ОПИСАНИЕ">
                             <ProductDescription
+                                description={`Категория: ${product?.category}\nОткуда: ${product?.distributor}`}
                                 tabContentStyle={styles.tabContent}
                                 descriptionTextStyle={styles.descriptionText}
                             />
