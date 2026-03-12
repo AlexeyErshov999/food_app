@@ -1,15 +1,11 @@
 export type Product = {
     id: number;
-    name: string;
+    prod_name: string;
     weight: number;
     proteins: number;
     carbohydrates: number;
     fats: number;
     calories: number;
+    category: string;
+    distributor: string;
 }
-
-export type Dish = Product
-
-export type Drink = Product
-
-export type TableType = 'products' | 'dishes' | 'drinks'

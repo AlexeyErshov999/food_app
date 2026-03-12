@@ -1,25 +1,23 @@
 import {useEffect, useState} from 'react';
 import {Button, Layout, Text} from "@ui-kitten/components";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {Animated, View} from "react-native";
-import {Dish, Drink} from "@/app/database/types";
-import ScrollView = Animated.ScrollView;
+import {View, ScrollView} from "react-native";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
 import {Link, RelativePathString} from 'expo-router';
 
 interface Product {
     id: number;
-    name: string;
+    prod_name: string;
     proteins: number;
     carbohydrates: number;
     fats: number;
     calories: number;
+    category: string;
+    distributor: string;
 }
 
 export default function HomeScreen() {
     const [products, setProducts] = useState<Product[]>([]);
-    const [dishes, setDishes] = useState<Dish[]>([]);
-    const [drinks, setDrinks] = useState<Drink[]>([]);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
@@ -30,11 +28,7 @@ export default function HomeScreen() {
             setLoading(true);
             const db = DatabaseService.getInstance()
             const productsFromDb = await db.getAllProducts()
-            const dishesFromDb = await db.getAllDishes()
-            const drinksFromDb = await db.getAllDrinks()
             setProducts([...productsFromDb])
-            setDishes([...dishesFromDb])
-            setDrinks([...drinksFromDb])
 
             // TODO: потом убрать!!! Это для теста загрузки
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -88,10 +82,6 @@ export default function HomeScreen() {
                     Products list
                 </Text>
                 <ScrollView>
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        PRODUCTS
-                    </Text>
-
                     {products.length > 0 ? (
                         products.map((product: Product) => (
                             <Link
@@ -104,65 +94,13 @@ export default function HomeScreen() {
                                     borderBottomColor: "#ddd",
                                 }}>
                                 <Text>
-                                    {product.name} - {product.calories} kcal
+                                    {product.prod_name} - {product.category}
                                 </Text>
                             </Link>
                         ))
                     ) : (
                         <Text style={{textAlign: "center", marginTop: 20}}>
                             No products found.
-                        </Text>
-                    )}
-
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        DISHES
-                    </Text>
-
-                    {dishes.length > 0 ? (
-                        dishes.map((dish: Dish) => (
-                            <Link
-                                href={`/(screens)/products/${dish.id}` as RelativePathString}
-                                key={dish.id}
-                                style={{
-                                    padding: 8,
-                                    fontSize: 16,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: "#ddd",
-                                }}>
-                                <Text>
-                                    {dish.name} - {dish.calories} kcal
-                                </Text>
-                            </Link>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: "center", marginTop: 20}}>
-                            No dishes found.
-                        </Text>
-                    )}
-
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        DRINKS
-                    </Text>
-
-                    {drinks.length > 0 ? (
-                        drinks.map((drink: Drink) => (
-                            <Link
-                                href={`/(screens)/products/${drink.id}` as RelativePathString}
-                                key={drink.id}
-                                style={{
-                                    padding: 8,
-                                    fontSize: 16,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: "#ddd",
-                                }}>
-                                <Text>
-                                    {drink.name} - {drink.calories} kcal
-                                </Text>
-                            </Link>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: "center", marginTop: 20}}>
-                            No drinks found.
                         </Text>
                     )}
                 </ScrollView>
