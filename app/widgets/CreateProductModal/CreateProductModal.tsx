@@ -14,10 +14,10 @@ import {
 } from '@ui-kitten/components';
 import {styles} from "@/app/widgets/CreateProductModal/styles";
 import {InputField} from "@/app/components/InputField/InputField";
-import {foodTypes, ICreateProductModalProps} from "@/app/widgets/CreateProductModal/types";
+import {FOOD_TYPES, ICreateProductModalProps, FoodType} from "@/app/widgets/CreateProductModal/types";
 import {Ionicons} from "@expo/vector-icons";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {TableType} from "@/app/database/types";
+import {CATEGORIES_TRANSLATIONS} from "@/app/widgets/CreateProductModal/translations";
 
 const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductModalProps) => {
     const db = DatabaseService.getInstance()
@@ -27,20 +27,24 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
     const [fats, setFats] = useState('');
     const [calories, setCalories] = useState('');
     const [weight, setWeight] = useState('100');
-    const [selectedTypeIndex, setSelectedTypeIndex] = useState<number>(0);
+    const [category, setCategory] = useState('');
+    const [distributor, setDistributor] = useState('');
+    const [selectedTypeIndex, setSelectedTypeIndex] = useState<number>(1);
 
     const handleCreate = async () => {
-        const productType = foodTypes[selectedTypeIndex - 1]?.toLowerCase()
         const productData = {
-            name: productName,
+            prod_name: productName,
             weight: parseFloat(weight) || 100,
             proteins: parseFloat(proteins) || 0,
             carbohydrates: parseFloat(carbohydrates) || 0,
             fats: parseFloat(fats) || 0,
-            calories: parseFloat(calories) || 0
+            calories: parseFloat(calories) || 0,
+            // TODO: добавить в форму выбор category и distributor
+            category: category,
+            distributor: distributor || "Не задано"
         };
 
-        await db.addFoodToTable(productType as TableType, productData)
+        await db.addProduct(productData)
 
         resetForm();
         onSaveProduct();
@@ -54,13 +58,18 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
         setCalories('');
         setWeight('100');
         setSelectedTypeIndex(0);
+        setCategory('');
+        setDistributor('');
     };
 
     return (
         <Modal
             visible={visible}
             backdropStyle={styles.backdrop}
-            onBackdropPress={onClose}
+            onBackdropPress={() => {
+                onClose()
+                resetForm()
+            }}
         >
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -72,7 +81,10 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
                             appearance='ghost'
                             status='basic'
                             size='small'
-                            onPress={onClose}
+                            onPress={() => {
+                                onClose()
+                                resetForm()
+                            }}
                             accessoryLeft={(props) => <Ionicons name="close" size={20} {...props} />}
                         />
                     </Layout>
@@ -83,18 +95,22 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
                         {/* Тип */}
                         <Layout style={styles.inputContainer}>
                             <Text category='c1' appearance='hint' style={styles.inputLabel}>
-                                Выберите тип
+                                Выберите категорию
                             </Text>
                             <Select
-                                selectedIndex={selectedTypeIndex > 0 ? new IndexPath(selectedTypeIndex - 1) : undefined}
-                                onSelect={(index) => setSelectedTypeIndex((index as IndexPath).row + 1)}
+                                selectedIndex={selectedTypeIndex >= 0 ? new IndexPath(selectedTypeIndex) : undefined}
+                                onSelect={(index) => {
+                                    const selectedIndex = (index as IndexPath).row;
+                                    setSelectedTypeIndex(selectedIndex);
+                                    setCategory(FOOD_TYPES[selectedIndex]);
+                                }}
                                 size='medium'
                                 style={styles.input}
-                                placeholder="Выберите тип"
-                                value={selectedTypeIndex > 0 ? foodTypes[selectedTypeIndex - 1] : ''}
+                                placeholder="Выберите категорию"
+                                value={selectedTypeIndex >= 0 ? CATEGORIES_TRANSLATIONS[FOOD_TYPES[selectedTypeIndex] as FoodType] : ''}
                             >
-                                {foodTypes.map((unit, index) => (
-                                    <SelectItem key={index} title={unit}/>
+                                {FOOD_TYPES.map((type, index) => (
+                                    <SelectItem key={index} title={CATEGORIES_TRANSLATIONS[type]}/>
                                 ))}
                             </Select>
                         </Layout>
@@ -107,7 +123,21 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
                             <Input
                                 value={productName}
                                 onChangeText={setProductName}
-                                placeholder='Например: Куриное филе'
+                                placeholder='Куриное филе'
+                                size='medium'
+                                style={styles.input}
+                            />
+                        </Layout>
+
+                        {/* Откуда продукт */}
+                        <Layout style={styles.inputContainer}>
+                            <Text category='c1' appearance='hint' style={styles.inputLabel}>
+                                Откуда продукт
+                            </Text>
+                            <Input
+                                value={distributor}
+                                onChangeText={setDistributor}
+                                placeholder='Магнит'
                                 size='medium'
                                 style={styles.input}
                             />
@@ -148,7 +178,10 @@ const CreateProductModal = ({visible, onClose, onSaveProduct}: ICreateProductMod
                                 style={styles.cancelButton}
                                 appearance='outline'
                                 status='basic'
-                                onPress={onClose}
+                                onPress={() => {
+                                    onClose()
+                                    resetForm()
+                                }}
                             >
                                 Отмена
                             </Button>

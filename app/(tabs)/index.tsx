@@ -1,24 +1,23 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Button, Layout, Text} from "@ui-kitten/components";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {Animated, View} from "react-native";
-import {Dish, Drink} from "@/app/database/types";
-import ScrollView = Animated.ScrollView;
+import {View, ScrollView} from "react-native";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
+import {Link, RelativePathString, useFocusEffect} from 'expo-router';
 
 interface Product {
     id: number;
-    name: string;
+    prod_name: string;
     proteins: number;
     carbohydrates: number;
     fats: number;
     calories: number;
+    category: string;
+    distributor: string;
 }
 
 export default function HomeScreen() {
     const [products, setProducts] = useState<Product[]>([]);
-    const [dishes, setDishes] = useState<Dish[]>([]);
-    const [drinks, setDrinks] = useState<Drink[]>([]);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
@@ -29,11 +28,7 @@ export default function HomeScreen() {
             setLoading(true);
             const db = DatabaseService.getInstance()
             const productsFromDb = await db.getAllProducts()
-            const dishesFromDb = await db.getAllDishes()
-            const drinksFromDb = await db.getAllDrinks()
             setProducts([...productsFromDb])
-            setDishes([...dishesFromDb])
-            setDrinks([...drinksFromDb])
 
             // TODO: потом убрать!!! Это для теста загрузки
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -48,6 +43,12 @@ export default function HomeScreen() {
     useEffect(() => {
         loadData();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     // Закрытие модального окна с обновлением
     const handleProductSave = async (shouldRefresh?: boolean) => {
@@ -77,96 +78,75 @@ export default function HomeScreen() {
 
     return (
         <>
-            <Layout style={{flex: 1, backgroundColor: '#f5f5f5', position: 'relative'}}>
+            <Layout
+                style={{
+                    flex: 1,
+                    backgroundColor: "#f5f5f5",
+                    position: "relative",
+                }}>
                 <Text style={{fontSize: 24, marginBottom: 20, padding: 16}}>
                     Products list
                 </Text>
                 <ScrollView>
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        PRODUCTS
-                    </Text>
-
                     {products.length > 0 ? (
                         products.map((product: Product) => (
-                            <Text
+                            <Link
+                                href={`/(screens)/products/${product.id}` as RelativePathString}
                                 key={product.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
-                                {product.name} - {product.calories} kcal
-                            </Text>
+                                style={{
+                                    padding: 8,
+                                    fontSize: 16,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "#ddd",
+                                }}>
+                                <Text>
+                                    {product.prod_name}
+                                </Text>
+                            </Link>
                         ))
                     ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
+                        <Text style={{textAlign: "center", marginTop: 20}}>
                             No products found.
-                        </Text>
-                    )}
-
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        DISHES
-                    </Text>
-
-                    {dishes.length > 0 ? (
-                        dishes.map((dish: Dish) => (
-                            <Text
-                                key={dish.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
-                                {dish.name} - {dish.calories} kcal
-                            </Text>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
-                            No dishes found.
-                        </Text>
-                    )}
-
-                    <Text style={{fontSize: 20, marginBottom: 5, padding: 5}}>
-                        DRINKS
-                    </Text>
-
-                    {drinks.length > 0 ? (
-                        drinks.map((drink: Drink) => (
-                            <Text
-                                key={drink.id}
-                                style={{padding: 8, fontSize: 16, borderBottomWidth: 1, borderBottomColor: '#ddd'}}
-                            >
-                                {drink.name} - {drink.calories} kcal
-                            </Text>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>
-                            No drinks found.
                         </Text>
                     )}
                 </ScrollView>
 
                 <Button
                     style={{
-                        borderRadius: '50%',
-                        position: 'absolute',
+                        borderRadius: "50%",
+                        position: "absolute",
                         bottom: 50,
                         right: 20,
                         width: 60,
-                        height: 60
+                        height: 60,
                     }}
-                    status='primary'
-                    size='large'
-                    accessoryRight={(props) => (
-                        <Text {...props} style={{fontSize: 30, color: 'white', lineHeight: 30}}>
+                    status="primary"
+                    size="large"
+                    accessoryRight={props => (
+                        <Text
+                            {...props}
+                            style={{
+                                fontSize: 30,
+                                color: "white",
+                                lineHeight: 30,
+                            }}>
                             +
                         </Text>
                     )}
                     onPress={() => {
-                        setIsCreateModalOpen(true)
+                        setIsCreateModalOpen(true);
                     }}
                 />
             </Layout>
 
             {/*// Modals*/}
-            <CreateProductModal visible={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}
-                                onSaveProduct={async () => {
-                                    await handleProductSave(true)
-                                }}/>
+            <CreateProductModal
+                visible={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSaveProduct={async () => {
+                    await handleProductSave(true);
+                }}
+            />
         </>
     );
 }
