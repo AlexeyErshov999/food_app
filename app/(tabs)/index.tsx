@@ -1,29 +1,48 @@
 import {useCallback, useEffect, useState} from 'react';
-import {Button, Layout, Text} from "@ui-kitten/components";
+import {Button, Layout, Spinner, Text, Input} from "@ui-kitten/components";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {View, ScrollView} from "react-native";
+import {View, FlatList} from "react-native";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
-import {Link, RelativePathString, useFocusEffect} from 'expo-router';
-
-interface Product {
-    id: number;
-    prod_name: string;
-    proteins: number;
-    carbohydrates: number;
-    fats: number;
-    calories: number;
-    category: string;
-    distributor: string;
-}
+import {useFocusEffect} from 'expo-router';
+import {ProductCard} from "@/app/components/ProductsListCard/ProductsListCard";
+import {Ionicons} from "@expo/vector-icons";
+import {Product} from "@/app/shared/types";
 
 export default function HomeScreen() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const loadData = async (): Promise<void> => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        if (!debouncedSearchQuery.trim()) {
+            setFilteredProducts(products);
+            return;
+        }
+
+        const query = debouncedSearchQuery.toLowerCase().trim();
+        const filtered = products.filter(product =>
+            product.prod_name.toLowerCase().includes(query) ||
+            product.category.toLowerCase().includes(query) ||
+            product.distributor.toLowerCase().includes(query)
+        );
+
+        setFilteredProducts(filtered);
+    }, [debouncedSearchQuery, products]);
+
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
             const db = DatabaseService.getInstance()
@@ -38,16 +57,16 @@ export default function HomeScreen() {
         } finally {
             setLoading(false);
         }
-    }
+    }, []);
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [loadData]);
 
     useFocusEffect(
         useCallback(() => {
             loadData();
-        }, [])
+        }, [loadData])
     );
 
     // Закрытие модального окна с обновлением
@@ -58,6 +77,10 @@ export default function HomeScreen() {
         }
     };
 
+    const renderItem = ({item}: { item: Product }) => {
+        return <ProductCard product={item}/>
+    }
+
     // TODO: подумать про нормальное отображение ошибки, если не получилось загрузить продукты
     if (error) {
         return (
@@ -67,11 +90,10 @@ export default function HomeScreen() {
         );
     }
 
-    // TODO: подумать про нормальную загрузку, пока продукты грузятся
     if (loading) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <Text>Загрузка...</Text>
+                <Spinner size={'large'}/>
             </View>
         );
     }
@@ -84,36 +106,34 @@ export default function HomeScreen() {
                     backgroundColor: "#f5f5f5",
                     position: "relative",
                 }}>
-                <Text style={{fontSize: 24, marginBottom: 20, padding: 16}}>
-                    Products list
-                </Text>
-                <ScrollView>
-                    {products.length > 0 ? (
-                        products.map((product: Product) => (
-                            <Link
-                                href={`/(screens)/products/${product.id}` as RelativePathString}
-                                key={product.id}
-                                style={{
-                                    padding: 8,
-                                    fontSize: 16,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: "#ddd",
-                                }}>
-                                <Text>
-                                    {product.prod_name}
-                                </Text>
-                            </Link>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: "center", marginTop: 20}}>
-                            No products found.
-                        </Text>
-                    )}
-                </ScrollView>
+
+                <Layout style={{padding: 16, backgroundColor: 'transparent'}}>
+                    <Input
+                        placeholder="Поиск продуктов..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        accessoryLeft={(props) => <Ionicons name={'search'} size={20} {...props} />}
+                        size="medium"
+                        status="primary"
+                    />
+                </Layout>
+
+                <FlatList
+                    data={filteredProducts}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    ListEmptyComponent={
+                        <Layout style={{padding: 32, alignItems: 'center'}}>
+                            <Text appearance="hint">
+                                {searchQuery ? 'Ничего не найдено' : 'Нет продуктов'}
+                            </Text>
+                        </Layout>
+                    }
+                />
 
                 <Button
                     style={{
-                        borderRadius: "50%",
+                        borderRadius: 50,
                         position: "absolute",
                         bottom: 50,
                         right: 20,
@@ -139,7 +159,7 @@ export default function HomeScreen() {
                 />
             </Layout>
 
-            {/*// Modals*/}
+            {/* Modals */}
             <CreateProductModal
                 visible={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}

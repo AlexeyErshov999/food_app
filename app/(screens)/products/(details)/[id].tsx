@@ -11,7 +11,7 @@ import {
     Tab, Spinner,
 } from "@ui-kitten/components";
 import {Stack, useLocalSearchParams, router} from "expo-router";
-import {Product} from "@/app/database/types";
+import {Product} from "@/app/shared/types"
 import {DatabaseService} from "@/app/database/DatabaseService";
 import {styles} from "@/app/(screens)/products/(details)/styles";
 import {ProductDescription} from "@/app/components/ProductDescription/ProductDescription";
