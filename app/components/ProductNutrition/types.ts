@@ -1,7 +1,7 @@
-import {Dish, Drink, Product} from "@/app/database/types";
+import {Product} from "@/app/shared/types";
 
 export interface IProductNutritionProps {
-    product: Product | Dish | Drink | null;
+    product: Product | null;
     contentStyle?: { [key: string]: string | number };
     cardStyle?: { [key: string]: string | number };
     rowStyle?: { [key: string]: string | number };

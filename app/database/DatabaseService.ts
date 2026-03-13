@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite'
 import {testData} from "@/app/database/testData";
-import {Product} from "@/app/database/types";
+import {Product} from '@/app/shared/types'
 
 export class DatabaseService {
     private static instance: DatabaseService;
