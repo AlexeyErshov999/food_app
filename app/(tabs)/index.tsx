@@ -1,12 +1,13 @@
 import {useCallback, useEffect, useState} from 'react';
 import {Button, Layout, Spinner, Text, Input} from "@ui-kitten/components";
 import {DatabaseService} from "@/app/database/DatabaseService";
-import {View, FlatList} from "react-native";
+import {View, FlatList, TouchableOpacity} from "react-native";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
 import {useFocusEffect} from 'expo-router';
 import {ProductCard} from "@/app/components/ProductsListCard/ProductsListCard";
 import {Ionicons} from "@expo/vector-icons";
 import {Product} from "@/app/shared/types";
+import {navigateToCart} from "@/app/shared/utils";
 
 export default function HomeScreen() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -107,7 +108,14 @@ export default function HomeScreen() {
                     position: "relative",
                 }}>
 
-                <Layout style={{padding: 16, backgroundColor: 'transparent'}}>
+                <Layout style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: 16,
+                    backgroundColor: 'transparent'
+                }}>
                     <Input
                         placeholder="Поиск продуктов..."
                         value={searchQuery}
@@ -115,7 +123,11 @@ export default function HomeScreen() {
                         accessoryLeft={(props) => <Ionicons name={'search'} size={20} {...props} />}
                         size="medium"
                         status="primary"
+                        style={{flex: 1}}
                     />
+                    <TouchableOpacity onPress={navigateToCart}>
+                        <Ionicons name={'cart'} size={40}/>
+                    </TouchableOpacity>
                 </Layout>
 
                 <FlatList
@@ -142,16 +154,8 @@ export default function HomeScreen() {
                     }}
                     status="primary"
                     size="large"
-                    accessoryRight={props => (
-                        <Text
-                            {...props}
-                            style={{
-                                fontSize: 30,
-                                color: "white",
-                                lineHeight: 30,
-                            }}>
-                            +
-                        </Text>
+                    accessoryRight={() => (
+                        <Ionicons name={'add'} size={30} style={{color: 'white'}}/>
                     )}
                     onPress={() => {
                         setIsCreateModalOpen(true);

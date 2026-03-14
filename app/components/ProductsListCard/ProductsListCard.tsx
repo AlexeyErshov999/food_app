@@ -3,6 +3,7 @@ import {Layout, Card, Text} from '@ui-kitten/components';
 import {ViewProps, StyleSheet} from 'react-native';
 import {Product} from "@/app/shared/types";
 import {router} from "expo-router";
+import {navigateBack, navigateToProduct} from "@/app/shared/utils";
 
 interface HeaderProps extends Partial<ViewProps> {
     product: Product;
@@ -31,7 +32,7 @@ export const ProductCard = ({product}: { product: Product }) => {
         <Layout style={styles.container}>
             <Card
                 onPress={() => {
-                    router.push(`/products/${product.id}`)
+                    navigateToProduct(product.id)
                 }}
                 status="primary"
                 header={(props) => <Header product={product} {...props} />}

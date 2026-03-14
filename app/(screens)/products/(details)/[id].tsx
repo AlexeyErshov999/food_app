@@ -10,13 +10,15 @@ import {
     TabView,
     Tab, Spinner,
 } from "@ui-kitten/components";
-import {Stack, useLocalSearchParams, router} from "expo-router";
+import {Stack, useLocalSearchParams} from "expo-router";
 import {Product} from "@/app/shared/types"
 import {DatabaseService} from "@/app/database/DatabaseService";
 import {styles} from "@/app/(screens)/products/(details)/styles";
 import {ProductDescription} from "@/app/components/ProductDescription/ProductDescription";
 import {ProductNutrition} from "@/app/components/ProductNutrition/ProductNutrition";
 import {Ionicons} from "@expo/vector-icons";
+import {BackButton} from "@/app/components/BackButton/BackButton";
+import {navigateBack} from "@/app/shared/utils";
 
 const ProductDetailsScreen = () => {
     const [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
@@ -47,10 +49,6 @@ const ProductDetailsScreen = () => {
             setLoading(false);
         }
     }, [db]);
-
-    const navigateBack = () => {
-        router.back();
-    }
 
     useEffect(() => {
         loadProductById(parseInt(id as string));
@@ -88,14 +86,7 @@ const ProductDetailsScreen = () => {
                     contentContainerStyle={{flexGrow: 1}}
                 >
                     <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                        <Button
-                            appearance={'ghost'}
-                            size={'large'}
-                            onPress={() => navigateBack()}
-                        >
-                            <Ionicons name="arrow-back"/>
-                            Назад
-                        </Button>
+                        <BackButton cb={navigateBack}/>
                         <Button
                             appearance={'ghost'}
                             status={'danger'}
