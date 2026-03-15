@@ -1,65 +1,81 @@
-import {Stack} from "expo-router";
-import * as eva from '@eva-design/eva';
-import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
-import {EvaIconsPack} from '@ui-kitten/eva-icons';
-import {SafeAreaView} from "react-native-safe-area-context";
-import {StatusBar, View, Text} from "react-native";
-import * as SplashScreen from 'expo-splash-screen'
-import {useEffect, useState} from "react";
-import {DatabaseService} from "@/app/database/DatabaseService";
-import {CustomSplashScreen} from "@/app/widgets/SplashScreen/CustomSplashScreen";
+import { DatabaseService } from "@/app/database/DatabaseService";
+import { CustomSplashScreen } from "@/app/widgets/SplashScreen/CustomSplashScreen";
+import * as eva from "@eva-design/eva";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
+import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { StatusBar, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: 1000,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+});
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-    const [isDbReady, setIsDbReady] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
+function AppContent() {
+  const [isDbReady, setIsDbReady] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        async function prepare() {
-            try {
-                const db = DatabaseService.getInstance()
-                await db.initDatabase()
-                await db.fillDatabaseByTestData()
-
-                // TODO: потом убрать!!! Это для теста SplashScreen
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            } catch (err) {
-                console.error(`RootLayout:useEffect:prepare() failed, ${err}`)
-                setError(err as Error);
-            } finally {
-                setIsDbReady(true)
-                await SplashScreen.hideAsync()
-            }
-        }
-
-        prepare();
-    }, [])
-
-    // TODO: подумать про нормальное отображение ошибки, если БД не может соединиться
-    if (error) {
-        return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <Text>Ошибка загрузки: {error.message}</Text>
-            </View>
-        );
+  useEffect(() => {
+    async function prepare() {
+      try {
+        const db = await DatabaseService.getInstance();
+        await db.initDatabase();
+        await db.fillDatabaseByTestData();
+      } catch (err) {
+        console.error(`RootLayout:useEffect:prepare() failed, ${err}`);
+        setError(err as Error);
+      } finally {
+        setIsDbReady(true);
+        await SplashScreen.hideAsync();
+      }
     }
 
-    if (!isDbReady) {
-        return <CustomSplashScreen/>
-    }
+    prepare();
+  }, []);
 
+  if (error) {
     return (
-        <>
-            <IconRegistry icons={EvaIconsPack}/>
-            <ApplicationProvider {...eva} theme={eva.light}>
-                <SafeAreaView style={{flex: 1}}>
-                    <StatusBar barStyle="dark-content"/>
-                    <Stack>
-                        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                    </Stack>
-                </SafeAreaView>
-            </ApplicationProvider>
-        </>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Ошибка загрузки: {error.message}</Text>
+      </View>
     );
+  }
+
+  if (!isDbReady) {
+    return <CustomSplashScreen />;
+  }
+
+  return (
+    <>
+      <IconRegistry icons={EvaIconsPack} />
+      <ApplicationProvider {...eva} theme={eva.light}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <StatusBar barStyle="dark-content" />
+          <Stack screenOptions={{headerShown: false}}>
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </SafeAreaView>
+      </ApplicationProvider>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
+  );
 }

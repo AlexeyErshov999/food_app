@@ -1,0 +1,1 @@
+export const ARTIFICIAL_TIMEOUT = 800;
