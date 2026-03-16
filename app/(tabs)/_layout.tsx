@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { BottomNavigation, BottomNavigationTab } from "@ui-kitten/components";
 import { Tabs } from "expo-router";
+import { BottomTabIcon } from "../components/BottomTabIcon/BottomTabIcon";
 
 export default function TabsLayout() {
   return (
@@ -17,21 +17,13 @@ export default function TabsLayout() {
         >
           <BottomNavigationTab
             icon={(props) => (
-              <Ionicons
-                name="list"
-                {...props}
-                style={[props?.style, { fontSize: 24, color: 'rgba(0, 0, 0, 0.3)', }]}
-              />
+              <BottomTabIcon name="list" />
             )}
           />
 
           <BottomNavigationTab
             icon={(props) => (
-              <Ionicons
-                name="settings"
-                {...props}
-                style={[props?.style, { fontSize: 24 , color: 'rgba(0, 0, 0, 0.3)' }]}
-              />
+              <BottomTabIcon name="settings" />
             )}
           />
         </BottomNavigation>
