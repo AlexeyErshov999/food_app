@@ -1,7 +1,7 @@
 import {Product} from "@/app/shared/types";
 
 export interface IProductNutritionProps {
-    product: Product | null;
+    product: Product | undefined;
     contentStyle?: { [key: string]: string | number };
     cardStyle?: { [key: string]: string | number };
     rowStyle?: { [key: string]: string | number };
