@@ -146,6 +146,28 @@ export class DatabaseService {
     }
   }
 
+  public async editProductById(product: Omit<Product, 'id'>, id: number): Promise<void> {
+    const db = this.ensureDb();
+    const {
+      prod_name,
+      weight,
+      proteins,
+      carbohydrates,
+      fats,
+      calories,
+      category,
+      distributor,
+    } = product;
+    try {
+      await db.getAllAsync(
+        "UPDATE products SET prod_name = ?, weight = ?,  proteins = ?, carbohydrates = ?, fats = ?, calories = ?, category = ?, distributor = ? WHERE id = ?;",
+        [prod_name, weight, proteins, carbohydrates, fats, calories, category, distributor, id],
+      );
+    } catch (err) {
+      console.error(`DatabaseService:getProductById() failed, ${err}`);
+    }
+  }
+
   public async dropAllTables(): Promise<void> {
     const db = this.ensureDb();
     try {
