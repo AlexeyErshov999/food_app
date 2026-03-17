@@ -28,9 +28,6 @@ export const styles = StyleSheet.create({
         paddingBottom: 16,
         backgroundColor: "#FFFFFF",
     },
-    title: {
-        marginBottom: 8,
-    },
     ratingContainer: {
         flexDirection: "row",
         alignItems: "center",

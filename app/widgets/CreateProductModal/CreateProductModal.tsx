@@ -1,24 +1,24 @@
 import { InputField } from "@/app/components/InputField/InputField";
 import { DatabaseService } from "@/app/database/DatabaseService";
 import { styles } from "@/app/widgets/CreateProductModal/styles";
-import { CATEGORIES_TRANSLATIONS } from "@/app/widgets/CreateProductModal/translations";
+import { CATEGORIES_TRANSLATIONS } from "@/app/widgets/translations";
 import {
-    FOOD_TYPES,
-    FoodType,
-    ICreateProductModalProps,
-} from "@/app/widgets/CreateProductModal/types";
+  FOOD_TYPES,
+  FoodType,
+  ICreateProductModalProps,
+} from "@/app/widgets/types";
 import { Ionicons } from "@expo/vector-icons";
 import {
-    Button,
-    Card,
-    Divider,
-    IndexPath,
-    Input,
-    Layout,
-    Modal,
-    Select,
-    SelectItem,
-    Text,
+  Button,
+  Card,
+  Divider,
+  IndexPath,
+  Input,
+  Layout,
+  Modal,
+  Select,
+  SelectItem,
+  Text,
 } from "@ui-kitten/components";
 import React, { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";

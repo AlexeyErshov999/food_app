@@ -1,7 +1,7 @@
 import { Product } from "@/app/shared/types";
 import { navigateToProduct } from "@/app/shared/utils";
-import { CATEGORIES_TRANSLATIONS } from "@/app/widgets/CreateProductModal/translations";
-import { FoodType } from "@/app/widgets/CreateProductModal/types";
+import { CATEGORIES_TRANSLATIONS } from "@/app/widgets/translations";
+import { FoodType } from "@/app/widgets/types";
 import { Card, Layout, Text } from "@ui-kitten/components";
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
@@ -14,7 +14,8 @@ const Header = ({ product, ...props }: HeaderProps): React.ReactElement => (
   <Layout {...props} style={[props?.style, styles.header]}>
     <Text category="h6">{product.prod_name}</Text>
     <Text category="s1">
-      {CATEGORIES_TRANSLATIONS[product.category as FoodType]} • {product.distributor}
+      {CATEGORIES_TRANSLATIONS[product.category as FoodType]} •{" "}
+      {product.distributor}
     </Text>
   </Layout>
 );
@@ -41,13 +42,13 @@ export const ProductCard = ({ product }: { product: Product }) => {
         header={(props) => <Header product={product} {...props} />}
         footer={(props) => <Footer product={product} {...props} />}
       >
-        <Layout style={{flexDirection: 'row', gap: 20}}>
+        <Layout style={{ flexDirection: "row", gap: 20 }}>
           <View>
             <Text>🥩 Белки (г):</Text>
             <Text>🫒 Жиры (г):</Text>
             <Text>🍚 Углеводы (г):</Text>
           </View>
-          <View style={{alignItems: 'flex-end'}}>
+          <View style={{ alignItems: "flex-end" }}>
             <Text>{product.proteins.toFixed(1)}</Text>
             <Text>{product.fats.toFixed(1)}</Text>
             <Text>{product.carbohydrates.toFixed(1)}</Text>
@@ -61,7 +62,8 @@ export const ProductCard = ({ product }: { product: Product }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingInline: 16,
+    paddingBlock: 5,
   },
   header: {
     padding: 16,

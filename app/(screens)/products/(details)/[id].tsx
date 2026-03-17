@@ -1,12 +1,16 @@
-import { styles } from "@/app/(screens)/products/(details)/styles";
-import { BackButton } from "@/app/components/BackButton/BackButton";
-import { ProductDescription } from "@/app/components/ProductDescription/ProductDescription";
-import { ProductNutrition } from "@/app/components/ProductNutrition/ProductNutrition";
-import { DatabaseService } from "@/app/database/DatabaseService";
-import { ARTIFICIAL_TIMEOUT } from "@/app/shared/constants";
-import { navigateBack } from "@/app/shared/utils";
-import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import {styles} from "@/app/(screens)/products/(details)/styles";
+import {BackButton} from "@/app/components/BackButton/BackButton";
+import {ProductDescription} from "@/app/components/ProductDescription/ProductDescription";
+import {ProductNutrition} from "@/app/components/ProductNutrition/ProductNutrition";
+import {DatabaseService} from "@/app/database/DatabaseService";
+import {ARTIFICIAL_TIMEOUT} from "@/app/shared/constants";
+import {Product} from "@/app/shared/types";
+import {navigateBack} from "@/app/shared/utils";
+import EditProductModal from "@/app/widgets/EditProductModal/EditProductModal";
+import {CATEGORIES_TRANSLATIONS} from "@/app/widgets/translations";
+import {FoodType} from "@/app/widgets/types";
+import {Ionicons} from "@expo/vector-icons";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {
     Button,
     Layout,
@@ -15,137 +19,167 @@ import {
     TabView,
     Text,
 } from "@ui-kitten/components";
-import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import {Stack, useLocalSearchParams} from "expo-router";
+import React, {useEffect, useState} from "react";
+import {ScrollView, TouchableOpacity, View} from "react-native";
+import {useDeleteProduct} from "@/app/(screens)/products/(details)/mutation";
 
 const ProductDetailsScreen = () => {
-  const [db, setDb] = useState<DatabaseService | null>(null);
-  const [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
+    const [db, setDb] = useState<DatabaseService | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
 
-  const { id } = useLocalSearchParams();
+    const queryClient = useQueryClient()
 
-  const {
-    data: product,
-    isError,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["product", id],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, ARTIFICIAL_TIMEOUT));
-      const db = await DatabaseService.getInstance();
-      return db.getProductById(parseInt(id as string));
-    },
-  });
+    const deleteProductMutation = useDeleteProduct()
 
-  useEffect(() => {
-    DatabaseService.getInstance().then(setDb);
-  }, []);
+    const {id} = useLocalSearchParams();
 
-  if (isLoading) {
+    const {
+        data: product,
+        isError,
+        isLoading,
+        error,
+        isFetching
+    } = useQuery({
+        queryKey: ["product", id],
+        queryFn: async () => {
+            await new Promise((resolve) => setTimeout(resolve, ARTIFICIAL_TIMEOUT));
+            const db = await DatabaseService.getInstance();
+            return db.getProductById(parseInt(id as string));
+        },
+    });
+
+    useEffect(() => {
+        DatabaseService.getInstance().then(setDb);
+    }, []);
+
+    const handleDelete = async () => {
+        navigateBack();
+        await deleteProductMutation.mutateAsync(parseInt(id as string));
+        await queryClient.invalidateQueries({queryKey: ['product', id]});
+        await queryClient.invalidateQueries({queryKey: ['products']});
+    }
+
+    // TODO: подумать про нормальное отображение ошибки, если не получилось загрузить продукты
+    if (isError) {
+        return (
+            <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+                <Text>Ошибка загрузки: {error.message}</Text>
+            </View>
+        );
+    }
+
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Spinner size={"large"} />
-      </View>
-    );
-  }
+        <>
+            <Stack.Screen/>
+            <Layout style={{flex: 1}}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    style={{flex: 1}}
+                    contentContainerStyle={{flexGrow: 1}}
+                >
+                    <View
+                        style={{flexDirection: "row", justifyContent: "space-between"}}
+                    >
+                        <BackButton cb={navigateBack} disabled={isLoading || isFetching}/>
+                        <Button
+                            appearance={"ghost"}
+                            status={"danger"}
+                            size={"large"}
+                            onPress={async () => {
+                                handleDelete()
+                            }}
+                            disabled={isLoading || isFetching}
+                        >
+                            <Ionicons name="basket"/>
+                            Удалить
+                        </Button>
+                    </View>
+                    {(!isLoading && !isFetching) ? (
+                            <>
+                                <Layout style={styles.imageContainer}>
+                                    <Layout style={styles.imagePlaceholder}>
+                                        <Text category="h6" appearance="hint">
+                                            Изображение товара
+                                        </Text>
+                                    </Layout>
+                                </Layout>
 
-  // TODO: подумать про нормальное отображение ошибки, если не получилось загрузить продукты
-  if (isError) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Ошибка загрузки: {error.message}</Text>
-      </View>
-    );
-  }
+                                <Layout
+                                    style={[
+                                        styles.infoContainer,
+                                        {
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        },
+                                    ]}
+                                >
+                                    <Text category="h5">{product?.prod_name}</Text>
+                                    <TouchableOpacity onPress={() => setIsEditModalOpen(true)}>
+                                        <Ionicons name="create-outline" size={30} color={"blue"}/>
+                                    </TouchableOpacity>
+                                </Layout>
 
-  return (
-    <>
-      <Stack.Screen />
-      <Layout style={{ flex: 1 }}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <BackButton cb={navigateBack} />
-            <Button
-              appearance={"ghost"}
-              status={"danger"}
-              size={"large"}
-              onPress={async () => {
-                if (!db) return;
-                await db.deleteProductById(parseInt(id as string));
-                navigateBack();
-              }}
-            >
-              <Ionicons name="basket" />
-              Удалить
-            </Button>
-          </View>
-          <Layout style={styles.imageContainer}>
-            <Layout style={styles.imagePlaceholder}>
-              <Text category="h6" appearance="hint">
-                Изображение товара
-              </Text>
+                                <TabView
+                                    selectedIndex={selectedTabIndex}
+                                    onSelect={(index: number): void => setSelectedTabIndex(index)}
+                                    style={styles.tabView}
+                                >
+                                    <Tab title="ОПИСАНИЕ">
+                                        <ProductDescription
+                                            description={`Категория: ${CATEGORIES_TRANSLATIONS[product?.category as FoodType]}\nОткуда: ${product?.distributor}`}
+                                            tabContentStyle={styles.tabContent}
+                                            descriptionTextStyle={styles.descriptionText}
+                                        />
+                                    </Tab>
+                                    <Tab title="ПИЩЕВАЯ ЦЕННОСТЬ">
+                                        <ProductNutrition
+                                            product={product}
+                                            contentStyle={styles.tabContent}
+                                            cardStyle={styles.nutritionCard}
+                                            rowStyle={styles.nutritionRow}
+                                            dividerStyle={styles.nutritionDivider}
+                                            infoStyle={styles.servingInfo}
+                                        />
+                                    </Tab>
+                                </TabView>
+
+                                <View style={{flex: 1}}/>
+                            </>
+                        )
+                        :
+                        (<View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+                            <Spinner size={"large"}/>
+                        </View>)}
+                </ScrollView>
+
+                <Layout style={styles.buttonContainer}>
+                    <Button
+                        style={styles.buyButton}
+                        size="large"
+                        onPress={(): void => console.log("Добавлено в корзину")}
+                        disabled={isLoading || isFetching}
+                    >
+                        ДОБАВИТЬ В КОРЗИНУ
+                    </Button>
+                </Layout>
             </Layout>
-          </Layout>
 
-          <Layout style={styles.infoContainer}>
-            <Text category="h5" style={styles.title}>
-              {product?.prod_name}
-            </Text>
-          </Layout>
-
-          <TabView
-            selectedIndex={selectedTabIndex}
-            onSelect={(index: number): void => setSelectedTabIndex(index)}
-            style={styles.tabView}
-          >
-            <Tab title="ОПИСАНИЕ">
-              <ProductDescription
-                description={`Категория: ${product?.category}\nОткуда: ${product?.distributor}`}
-                tabContentStyle={styles.tabContent}
-                descriptionTextStyle={styles.descriptionText}
-              />
-            </Tab>
-            <Tab title="ПИЩЕВАЯ ЦЕННОСТЬ">
-              <ProductNutrition
-                product={product}
-                contentStyle={styles.tabContent}
-                cardStyle={styles.nutritionCard}
-                rowStyle={styles.nutritionRow}
-                dividerStyle={styles.nutritionDivider}
-                infoStyle={styles.servingInfo}
-              />
-            </Tab>
-          </TabView>
-
-          <View style={{ flex: 1 }} />
-        </ScrollView>
-
-        <Layout style={styles.buttonContainer}>
-          <Button
-            style={styles.buyButton}
-            size="large"
-            onPress={(): void => console.log("Добавлено в корзину")}
-          >
-            ДОБАВИТЬ В КОРЗИНУ
-          </Button>
-        </Layout>
-      </Layout>
-    </>
-  );
+            {isEditModalOpen && (
+                <EditProductModal
+                    visible={isEditModalOpen}
+                    product={product as Product}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onProductSave={() => {
+                        queryClient.invalidateQueries({queryKey: ["product", id]});
+                        queryClient.invalidateQueries({queryKey: ["products"]})
+                    }}
+                />
+            )}
+        </>
+    );
 };
 
 export default ProductDetailsScreen;
