@@ -23,17 +23,22 @@ import {Stack, useLocalSearchParams} from "expo-router";
 import React, {useEffect, useState} from "react";
 import {ScrollView, TouchableOpacity, View} from "react-native";
 import {useDeleteProduct} from "@/app/(screens)/products/(details)/mutation";
+import {useAppDispatch, useAppSelector} from "@/app/store/hooks";
+import {addToCart, removeFromCart} from "@/app/store/slices/cartSlice";
 
 const ProductDetailsScreen = () => {
     const [db, setDb] = useState<DatabaseService | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
 
-    const queryClient = useQueryClient()
-
-    const deleteProductMutation = useDeleteProduct()
+    const dispatch = useAppDispatch();
+    const queryClient = useQueryClient();
+    const deleteProductMutation = useDeleteProduct();
 
     const {id} = useLocalSearchParams();
+
+    const productsInCart = useAppSelector((state) => state.cart.products);
+    const isInCart = productsInCart.findIndex(item => item.id === Number(id as string)) > -1;
 
     const {
         data: product,
@@ -60,6 +65,14 @@ const ProductDetailsScreen = () => {
         await queryClient.invalidateQueries({queryKey: ['product', id]});
         await queryClient.invalidateQueries({queryKey: ['products']});
     }
+
+    const handleAddButtonPress = () => {
+        if (isInCart) {
+            dispatch(removeFromCart(Number(id as string)));
+        } else {
+            dispatch(addToCart(product!));
+        }
+    };
 
     // TODO: подумать про нормальное отображение ошибки, если не получилось загрузить продукты
     if (isError) {
@@ -158,11 +171,12 @@ const ProductDetailsScreen = () => {
                 <Layout style={styles.buttonContainer}>
                     <Button
                         style={styles.buyButton}
+                        status={isInCart ? 'danger' : 'primary'}
                         size="large"
-                        onPress={(): void => console.log("Добавлено в корзину")}
+                        onPress={handleAddButtonPress}
                         disabled={isLoading || isFetching}
                     >
-                        ДОБАВИТЬ В КОРЗИНУ
+                        {isInCart ? 'УБРАТЬ ИЗ КОРЗИНЫ' : 'ДОБАВИТЬ В КОРЗИНУ'}
                     </Button>
                 </Layout>
             </Layout>
