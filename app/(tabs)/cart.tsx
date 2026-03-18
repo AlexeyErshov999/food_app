@@ -1,12 +1,11 @@
 import {Stack} from "expo-router";
-import {navigateBack, navigateToProduct} from "@/app/shared/utils";
-import {BackButton} from "@/app/components/BackButton/BackButton";
+import {navigateToProduct} from "@/app/shared/utils";
 import {View, Text, FlatList, TouchableOpacity, StyleSheet} from "react-native";
 import {useAppDispatch, useAppSelector} from "@/app/store/hooks";
 import {Card} from "@ui-kitten/components";
 import {removeFromCart} from "@/app/store/slices/cartSlice";
 import {Ionicons} from "@expo/vector-icons";
-import NutritionCircles from "@/app/components/NutritionCircles/NutritionCircles";
+import NutritionCircles from "@/app/widgets/NutritionCircles/NutritionCircles";
 
 export default function CartPage() {
     const products = useAppSelector((state) => state.cart.products);

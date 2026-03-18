@@ -1,16 +1,20 @@
-import {ProductCard} from "@/app/components/ProductsListCard/ProductsListCard";
+import {ProductCard} from "@/app/widgets/ProductsListCard/ProductsListCard";
 import {DatabaseService} from "@/app/database/DatabaseService";
 import {Product} from "@/app/shared/types";
-import {navigateToCart} from "@/app/shared/utils";
 import CreateProductModal from "@/app/widgets/CreateProductModal/CreateProductModal";
 import {Ionicons} from "@expo/vector-icons";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {Button, Input, Layout, Spinner, Text} from "@ui-kitten/components";
 import {useEffect, useState} from "react";
-import {FlatList, TouchableOpacity, View} from "react-native";
+import {FlatList, View} from "react-native";
 import {ARTIFICIAL_TIMEOUT} from "../shared/constants";
 
 export default function HomeScreen() {
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+
     const queryClient = useQueryClient();
 
     const {
@@ -27,12 +31,6 @@ export default function HomeScreen() {
             return db.getAllProducts();
         },
     });
-
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [searchQuery, setSearchQuery] = useState<string>("");
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
-
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {

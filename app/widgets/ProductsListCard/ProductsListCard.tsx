@@ -8,10 +8,8 @@ import {StyleSheet, TouchableOpacity, View, ViewProps} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useAppDispatch, useAppSelector} from "@/app/store/hooks";
 import {addToCart, removeFromCart} from "@/app/store/slices/cartSlice";
-
-interface HeaderProps extends Partial<ViewProps> {
-    product: Product;
-}
+import { FooterProps, HeaderProps } from "./types";
+import { styles } from "./styles";
 
 const Header = ({product, ...props}: HeaderProps): React.ReactElement => {
     const dispatch = useAppDispatch();
@@ -45,10 +43,6 @@ const Header = ({product, ...props}: HeaderProps): React.ReactElement => {
         </Layout>
     )
 };
-
-interface FooterProps extends Partial<ViewProps> {
-    product: Product;
-}
 
 const Footer = ({product, ...props}: FooterProps): React.ReactElement => (
     <Layout {...props} style={[props?.style, styles.footer]}>
@@ -85,33 +79,3 @@ export const ProductCard = ({product}: { product: Product }) => {
         </Layout>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingInline: 16,
-        paddingBlock: 5,
-    },
-    card: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 16,
-    },
-    body: {
-        gap: 4,
-        paddingVertical: 8,
-    },
-    footer: {
-        padding: 16,
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-});

@@ -31,14 +31,14 @@ const ProductDetailsScreen = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
 
-    const queryClient = useQueryClient()
+    const dispatch = useAppDispatch();
+    const queryClient = useQueryClient();
+    const deleteProductMutation = useDeleteProduct();
+
     const {id} = useLocalSearchParams();
 
-    const dispatch = useAppDispatch();
     const productsInCart = useAppSelector((state) => state.cart.products);
     const isInCart = productsInCart.findIndex(item => item.id === Number(id as string)) > -1;
-
-    const deleteProductMutation = useDeleteProduct()
 
     const {
         data: product,
