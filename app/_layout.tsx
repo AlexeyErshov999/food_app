@@ -9,6 +9,8 @@ import * as SplashScreen from "expo-splash-screen";
 import {useEffect, useState} from "react";
 import {StatusBar, Text, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
+import {store} from "@/app/store/store";
+import {Provider} from "react-redux";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -74,7 +76,9 @@ function AppContent() {
 export default function RootLayout() {
     return (
         <QueryClientProvider client={queryClient}>
-            <AppContent/>
+            <Provider store={store}>
+                <AppContent/>
+            </Provider>
         </QueryClientProvider>
     );
 }

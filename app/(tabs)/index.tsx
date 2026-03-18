@@ -105,10 +105,6 @@ export default function HomeScreen() {
                         disabled={isLoading || isFetching || products.length === 0}
                         style={{flex: 1}}
                     />
-
-                    <TouchableOpacity onPress={navigateToCart} disabled={isLoading || isFetching}>
-                        <Ionicons name={"cart"} size={40}/>
-                    </TouchableOpacity>
                 </Layout>
 
                 {!isLoading && !isFetching ? (<FlatList
